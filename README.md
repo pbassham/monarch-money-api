@@ -1,6 +1,6 @@
 ## Unofficial Monarch Money API
+![Monarch Image](/monarch-image-blue.svg)
 This is an unofficial Javascript API for Monarch Money. It is not endorsed by Monarch Money and may break at any time. Use at your own risk.
-
 ## Getting Started
 You can deploy this on Vercel or Repl.it. You can also run it locally.
 ## Installation
@@ -151,6 +151,4 @@ updateTransactionSplits(transactionId, splitData)
 
 ## Credits
 
-This API is based on a lot of [Monarch Money](https://github.com/hammem/monarchmoney) to reverse engineer the Monarch Money API.
-
-## License
+This API is based on a lot of [Monarch Money](https://github.com/hammem/monarchmoney), a python library to access Monarch data.
