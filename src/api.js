@@ -1791,15 +1791,17 @@ export async function uploadAccountBalanceHistory(accountId, csvContent) {
   form.append("files", csvContent, { filename: "upload.csv", contentType: "text/csv" })
   form.append("account_files_mapping", JSON.stringify({ "upload.csv": accountId }))
 
-  const response = await axios.post(MonarchMoneyEndpoints.getAccountBalanceHistoryUploadEndpoint(), form, {
+  const response = await fetch(MonarchMoneyEndpoints.getAccountBalanceHistoryUploadEndpoint(), {
+    method: 'POST',
     headers: {
       ...this._headers,
       ...form.getHeaders(),
     },
-  })
+    body: form,
+  });
 
-  if (response.status !== 200) {
-    throw new RequestFailedException(`HTTP Code ${response.status}: ${response.statusText}`)
+  if (!response.ok) {
+    throw new RequestFailedException(`HTTP Code ${response.status}: ${response.statusText}`);
   }
 }
 
