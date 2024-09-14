@@ -1,5 +1,5 @@
 ## Unofficial Monarch Money API
-![Monarch Image](/monarch-image-blue.svg)
+![Monarch Image](https://github.com/pbassham/monarch-money-api/raw/main/monarch-image-blue.png)
 This is an unofficial Javascript API for Monarch Money. It is not endorsed by Monarch Money and may break at any time. Use at your own risk.
 
 ## Installation
