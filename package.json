@@ -1,6 +1,6 @@
 {
   "name": "monarch-money-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Unofficial Monarch Money API",
   "main": "src/index.js",
   "type": "module",
