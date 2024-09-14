@@ -29,7 +29,7 @@ const gqlCall = async (operation, graphqlQuery, variables = {}) => {
   
   return await client.request(graphqlQuery, variables)
 }
-
+//#region Queries
 export const getAccounts = async () => {
   const query = gql`
     query GetAccounts {
@@ -1342,7 +1342,9 @@ export async function getCashflowSummary({ limit = 100, startDate = null, endDat
 
   return await gqlCall("Web_GetCashFlowPage", query, variables)
 }
+//#endregion
 
+//#region Mutations
 ///////////////////////////////////
 // Mutation functions start here //
 //////////////////////////////////
@@ -2082,6 +2084,7 @@ export async function requestAccountsRefreshAndDontWait(accountIds = null) {
 
   return await requestAccountsRefresh(accountIds)
 }
+//#endregion
 
 // make schema introspection call (doesnt work)
 export async function getSchema() {
