@@ -83,7 +83,7 @@ export const interactiveLogin = async (useSavedSession = true, saveSessionFlag =
       rl.close()
       await multiFactorAuthenticate(email, passwd, twoFactorCode)
       if (saveSessionFlag) {
-        saveSession()
+        // saveSession()
       }
     } else {
       throw error
@@ -95,8 +95,8 @@ export const interactiveLogin = async (useSavedSession = true, saveSessionFlag =
 if (!process.env[ENV_TOKEN_KEY]) {
     console.error(`No environment variable with key "${ENV_TOKEN_KEY}" found.`)
     // throw new Error(`No environment variable with key "${ENV_TOKEN_KEY}" found.`)
-    interactiveLogin()
+    // interactiveLogin()
 } else {
-    console.log(`Loaded token from environment variable ${ENV_TOKEN_KEY}. ` + process.env[ENV_TOKEN_KEY])
+    // console.log(`Loaded token from environment variable ${ENV_TOKEN_KEY}. ` + process.env[ENV_TOKEN_KEY])
     // setToken(process.env.token)
 }
