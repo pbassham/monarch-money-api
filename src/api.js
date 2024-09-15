@@ -851,7 +851,7 @@ export async function getTransactions({
 
   const variables = {
     offset,
-    limit,
+    limit: limit,
     orderBy: "date",
     filters: {
       search,
@@ -1274,7 +1274,7 @@ export async function getCashflow({ limit = 100, startDate = null, endDate = nul
   `
 
   const variables = {
-    limit,
+    limit: limit,
     orderBy: "date",
     filters: {
       search: "",
@@ -1317,7 +1317,7 @@ export async function getCashflowSummary({ limit = 100, startDate = null, endDat
   `
 
   const variables = {
-    limit,
+    limit: limit,
     orderBy: "date",
     filters: {
       search: "",
