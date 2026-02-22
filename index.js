@@ -7,7 +7,7 @@ import FormData from 'form-data';
 import { authenticator } from 'otplib';
 
 export class MonarchMoneyEndpoints {
-    static BASE_URL = "https://api.monarchmoney.com";
+    static BASE_URL = "https://api.monarch.com";
 
     static getLoginEndpoint() {
         return this.BASE_URL + "/auth/login/";
