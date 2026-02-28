@@ -26,7 +26,7 @@ const getGraphQLClient = () => {
 const gqlCall = async (operation, graphqlQuery, variables = {}) => {
   const client = getGraphQLClient()
   // console.log("Operation:", client)
-  
+
   return await client.request(graphqlQuery, variables)
 }
 //#region Queries
@@ -571,6 +571,23 @@ export async function getAggregateSnapshots(startDate = null, endDate = null, ac
   })
 }
 
+export async function getBudgetSettings() {
+  const query = gql`
+    query Common_GetBudgetSettings {
+      budgetSystem
+      budgetApplyToFutureMonthsDefault
+      flexExpenseRolloverPeriod {
+        id
+        startMonth
+        startingBalance
+        __typename
+      }
+    }
+  `
+
+  return await gqlCall("Common_GetBudgetSettings", query)
+}
+
 // The new function to get budgets
 export const getBudgets = async (startDate = null, endDate = null, useLegacyGoals = false, useV2Goals = true) => {
   const query = gql`
@@ -781,11 +798,12 @@ export async function getTransactions({
   isRecurring = null,
   importedFromMint = null,
   syncedFromInstitution = null,
-}) {
+} = {}) {
   const query = gql`
-    query GetTransactionsList($offset: Int, $limit: Int, $filters: TransactionFilterInput, $orderBy: TransactionOrdering) {
+    query Web_GetTransactionsList($offset: Int, $limit: Int, $filters: TransactionFilterInput, $orderBy: TransactionOrdering) {
       allTransactions(filters: $filters) {
         totalCount
+        totalSelectableCount
         results(offset: $offset, limit: $limit, orderBy: $orderBy) {
           id
           ...TransactionOverviewFields
@@ -805,37 +823,56 @@ export async function getTransactions({
       pending
       date
       hideFromReports
+      hiddenByAccount
       plaidName
       notes
       isRecurring
       reviewStatus
       needsReview
+      isSplitTransaction
+      dataProviderDescription
+      deletedAt
+      deletedByType
       attachments {
         id
-        extension
-        filename
-        originalAssetUrl
-        publicId
-        sizeBytes
         __typename
       }
-      isSplitTransaction
-      createdAt
-      updatedAt
+      goal {
+        id
+        name
+        __typename
+      }
+      savingsGoalEvent {
+        id
+        goal {
+          id
+          name
+          __typename
+        }
+        __typename
+      }
       category {
         id
         name
+        icon
+        systemCategory
+        group {
+          id
+          type
+          __typename
+        }
         __typename
       }
       merchant {
         name
         id
         transactionsCount
-        __typename
-      }
-      account {
-        id
-        displayName
+        logoUrl
+        recurringTransactionStream {
+          frequency
+          isActive
+          __typename
+        }
         __typename
       }
       tags {
@@ -843,6 +880,26 @@ export async function getTransactions({
         name
         color
         order
+        __typename
+      }
+      account {
+        id
+        displayName
+        icon
+        logoUrl
+        __typename
+      }
+      ownedByUser {
+        id
+        displayName
+        profilePictureUrl
+        __typename
+      }
+      businessEntity {
+        id
+        name
+        logoUrl
+        color
         __typename
       }
       __typename
@@ -875,7 +932,7 @@ export async function getTransactions({
     throw new Error("You must specify both a startDate and endDate, not just one of them.")
   }
 
-  return await gqlCall("GetTransactionsList", query, variables)
+  return await gqlCall("Web_GetTransactionsList", query, variables)
 }
 
 export async function getTransactionsSummary() {
@@ -1794,16 +1851,16 @@ export async function uploadAccountBalanceHistory(accountId, csvContent) {
   form.append("account_files_mapping", JSON.stringify({ "upload.csv": accountId }))
 
   const response = await fetch(MonarchMoneyEndpoints.getAccountBalanceHistoryUploadEndpoint(), {
-    method: 'POST',
+    method: "POST",
     headers: {
       ...this._headers,
       ...form.getHeaders(),
     },
     body: form,
-  });
+  })
 
   if (!response.ok) {
-    throw new RequestFailedException(`HTTP Code ${response.status}: ${response.statusText}`);
+    throw new RequestFailedException(`HTTP Code ${response.status}: ${response.statusText}`)
   }
 }
 
@@ -1855,7 +1912,7 @@ export async function updateAccount(
   accountSubType = null,
   includeInNetWorth = null,
   hideFromSummaryList = null,
-  hideTransactionsFromReports = null
+  hideTransactionsFromReports = null,
 ) {
   const query = gql`
     mutation Common_UpdateAccount($input: UpdateAccountMutationInput!) {
