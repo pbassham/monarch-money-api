@@ -2,3 +2,4 @@ node_modules
 monarch
 .mm
 .vercel
+.env

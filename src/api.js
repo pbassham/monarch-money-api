@@ -591,171 +591,231 @@ export async function getBudgetSettings() {
 // The new function to get budgets
 export const getBudgets = async (startDate = null, endDate = null, useLegacyGoals = false, useV2Goals = true) => {
   const query = gql`
-    query GetJointPlanningData($startDate: Date!, $endDate: Date!, $useLegacyGoals: Boolean!, $useV2Goals: Boolean!) {
-      budgetData(startMonth: $startDate, endMonth: $endDate) {
-        monthlyAmountsByCategory {
-          category {
-            id
-            name
-            __typename
-          }
-          monthlyAmounts {
-            month
-            plannedCashFlowAmount
-            plannedSetAsideAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            rolloverType
-            __typename
-          }
-          __typename
-        }
-        monthlyAmountsByCategoryGroup {
-          categoryGroup {
-            id
-            name
-            __typename
-          }
-          monthlyAmounts {
-            month
-            plannedCashFlowAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            rolloverType
-            __typename
-          }
-          __typename
-        }
-        monthlyAmountsForFlexExpense {
-          budgetVariability
-          monthlyAmounts {
-            month
-            plannedCashFlowAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            rolloverType
-            __typename
-          }
-          __typename
-        }
-        totalsByMonth {
-          month
-          totalIncome {
-            plannedAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            __typename
-          }
-          totalExpenses {
-            plannedAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            __typename
-          }
-          totalFixedExpenses {
-            plannedAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            __typename
-          }
-          totalNonMonthlyExpenses {
-            plannedAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            __typename
-          }
-          totalFlexibleExpenses {
-            plannedAmount
-            actualAmount
-            remainingAmount
-            previousMonthRolloverAmount
-            __typename
-          }
-          __typename
-        }
-        __typename
-      }
-      categoryGroups {
-        id
-        name
-        order
-        groupLevelBudgetingEnabled
-        budgetVariability
-        rolloverPeriod {
-          id
-          startMonth
-          endMonth
-          __typename
-        }
-        categories {
-          id
-          name
-          order
-          budgetVariability
-          rolloverPeriod {
-            id
-            startMonth
-            endMonth
-            __typename
-          }
-          __typename
-        }
-        type
-        __typename
-      }
-      goals @include(if: $useLegacyGoals) {
-        id
-        name
-        completedAt
-        targetDate
-        __typename
-      }
-      goalMonthlyContributions(startDate: $startDate, endDate: $endDate) @include(if: $useLegacyGoals) {
-        month: monthlyContribution
-        startDate
-        goalId
-        __typename
-      }
-      goalPlannedContributions(startDate: $startDate, endDate: $endDate) @include(if: $useLegacyGoals) {
-        id
-        amount
-        startDate
-        goal {
-          id
-          __typename
-        }
-        __typename
-      }
-      goalsV2 @include(if: $useV2Goals) {
-        id
-        name
-        archivedAt
-        completedAt
-        priority
-        imageStorageProvider
-        imageStorageProviderId
-        plannedContributions(startMonth: $startDate, endMonth: $endDate) {
-          id
-          month
-          amount
-          __typename
-        }
-        monthlyContributionSummaries(startMonth: $startDate, endMonth: $endDate) {
-          month
-          sum
-          __typename
-        }
-        __typename
-      }
-      budgetSystem
-    }
+    query Common_GetJointPlanningData($startDate: Date!, $endDate: Date!) {
+  budgetSystem
+  budgetData(startMonth: $startDate, endMonth: $endDate) {
+    ...BudgetDataFields
+    __typename
+  }
+  categoryGroups {
+    ...BudgetCategoryGroupFields
+    __typename
+  }
+  goalsV2 {
+    ...BudgetDataGoalsV2Fields
+    __typename
+  }
+  savingsGoalMonthlyBudgetAmounts(startMonth: $startDate, endMonth: $endDate) {
+    ...SavingsGoalMonthlyBudgetAmountsFields
+    __typename
+  }
+}
+
+fragment BudgetDataMonthlyAmountsFields on BudgetMonthlyAmounts {
+  month
+  plannedCashFlowAmount
+  plannedSetAsideAmount
+  actualAmount
+  remainingAmount
+  previousMonthRolloverAmount
+  rolloverType
+  cumulativeActualAmount
+  rolloverTargetAmount
+  __typename
+}
+
+fragment BudgetMonthlyAmountsByCategoryFields on BudgetCategoryMonthlyAmounts {
+  category {
+    id
+    __typename
+  }
+  monthlyAmounts {
+    ...BudgetDataMonthlyAmountsFields
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetMonthlyAmountsByCategoryGroupFields on BudgetCategoryGroupMonthlyAmounts {
+  categoryGroup {
+    id
+    __typename
+  }
+  monthlyAmounts {
+    ...BudgetDataMonthlyAmountsFields
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetMonthlyAmountsForFlexExpenseFields on BudgetFlexMonthlyAmounts {
+  budgetVariability
+  monthlyAmounts {
+    ...BudgetDataMonthlyAmountsFields
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetDataTotalsByMonthFields on BudgetTotals {
+  actualAmount
+  plannedAmount
+  previousMonthRolloverAmount
+  remainingAmount
+  __typename
+}
+
+fragment BudgetTotalsByMonthFields on BudgetMonthTotals {
+  month
+  totalIncome {
+    ...BudgetDataTotalsByMonthFields
+    __typename
+  }
+  totalExpenses {
+    ...BudgetDataTotalsByMonthFields
+    __typename
+  }
+  totalFixedExpenses {
+    ...BudgetDataTotalsByMonthFields
+    __typename
+  }
+  totalNonMonthlyExpenses {
+    ...BudgetDataTotalsByMonthFields
+    __typename
+  }
+  totalFlexibleExpenses {
+    ...BudgetDataTotalsByMonthFields
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetRolloverPeriodFields on BudgetRolloverPeriod {
+  id
+  startMonth
+  endMonth
+  startingBalance
+  targetAmount
+  frequency
+  type
+  __typename
+}
+
+fragment BudgetCategoryFields on Category {
+  id
+  name
+  icon
+  order
+  budgetVariability
+  excludeFromBudget
+  isSystemCategory
+  updatedAt
+  group {
+    id
+    type
+    budgetVariability
+    groupLevelBudgetingEnabled
+    __typename
+  }
+  rolloverPeriod {
+    ...BudgetRolloverPeriodFields
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetDataFields on BudgetData {
+  monthlyAmountsByCategory {
+    ...BudgetMonthlyAmountsByCategoryFields
+    __typename
+  }
+  monthlyAmountsByCategoryGroup {
+    ...BudgetMonthlyAmountsByCategoryGroupFields
+    __typename
+  }
+  monthlyAmountsForFlexExpense {
+    ...BudgetMonthlyAmountsForFlexExpenseFields
+    __typename
+  }
+  totalsByMonth {
+    ...BudgetTotalsByMonthFields
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetCategoryGroupFields on CategoryGroup {
+  id
+  name
+  order
+  type
+  budgetVariability
+  updatedAt
+  groupLevelBudgetingEnabled
+  categories {
+    ...BudgetCategoryFields
+    __typename
+  }
+  rolloverPeriod {
+    id
+    type
+    startMonth
+    endMonth
+    startingBalance
+    frequency
+    targetAmount
+    __typename
+  }
+  __typename
+}
+
+fragment BudgetDataGoalsV2Fields on GoalV2 {
+  id
+  name
+  archivedAt
+  completedAt
+  priority
+  imageStorageProvider
+  imageStorageProviderId
+  plannedContributions(startMonth: $startDate, endMonth: $endDate) {
+    id
+    month
+    amount
+    __typename
+  }
+  monthlyContributionSummaries(startMonth: $startDate, endMonth: $endDate) {
+    month
+    sum
+    __typename
+  }
+  __typename
+}
+
+fragment SavingsGoalMonthlyBudgetAmountsFields on SavingsGoalMonthlyBudgetAmounts {
+  id
+  savingsGoal {
+    id
+    name
+    type
+    status
+    archivedAt
+    completedAt
+    priority
+    targetDate
+    imageStorageProvider
+    imageStorageProviderId
+    __typename
+  }
+  monthlyAmounts {
+    id
+    month
+    plannedAmount
+    actualAmount
+    remainingAmount
+    __typename
+  }
+  __typename
+}
   `
 
   const variables = {
@@ -856,6 +916,7 @@ export async function getTransactions({
         name
         icon
         systemCategory
+        budgetVariability
         group {
           id
           type
@@ -1017,7 +1078,7 @@ export async function getRecurringTransactions(startDate = null, endDate = null)
 }
 
 // The new function to get transaction categories
-export const getTransactionCategories = async () => {
+export const getCategories = async () => {
   const query = gql`
     query GetCategories {
       categories {
@@ -1030,15 +1091,27 @@ export const getTransactionCategories = async () => {
       id
       order
       name
+      icon
       systemCategory
       isSystemCategory
       isDisabled
       updatedAt
       createdAt
+      budgetVariability
       group {
         id
         name
         type
+        __typename
+      }
+      rolloverPeriod {
+        id
+        type
+        startMonth
+        endMonth
+        startingBalance
+        frequency
+        targetAmount
         __typename
       }
       __typename
@@ -1047,7 +1120,7 @@ export const getTransactionCategories = async () => {
   return await gqlCall("GetCategories", query)
 }
 
-export async function getTransactionCategoryGroups() {
+export async function getCategoryGroups() {
   const query = gql`
     query ManageGetCategoryGroups {
       categoryGroups {
@@ -1261,7 +1334,7 @@ export async function getTransactionSplits(transactionId) {
   return await gqlCall("TransactionSplitQuery", query, variables)
 }
 
-export async function getCashflow({ limit = 100, startDate = null, endDate = null }) {
+export async function getCashflow({ limit = 100, startDate = null, endDate = null } = {}) {
   const query = gql`
     query Web_GetCashFlowPage($filters: TransactionFilterInput) {
       byCategory: aggregates(filters: $filters, groupBy: ["category"]) {
@@ -1357,7 +1430,7 @@ export async function getCashflow({ limit = 100, startDate = null, endDate = nul
   return await gqlCall("Web_GetCashFlowPage", query, variables)
 }
 
-export async function getCashflowSummary({ limit = 100, startDate = null, endDate = null }) {
+export async function getCashflowSummary({ limit = 100, startDate = null, endDate = null } = {}) {
   const query = gql`
     query Web_GetCashFlowPage($filters: TransactionFilterInput) {
       summary: aggregates(filters: $filters, fillEmptyValues: true) {
@@ -1399,6 +1472,27 @@ export async function getCashflowSummary({ limit = 100, startDate = null, endDat
 
   return await gqlCall("Web_GetCashFlowPage", query, variables)
 }
+
+// Used to build the dashboard widget on the homepage which compares spending from this month to last month
+export async function getCashFlowDashboard(){
+  const query = gql`
+  query Common_GetCashFlowDashboard($filters: TransactionFilterInput) {
+  byDay: aggregates(filters: $filters, fillEmptyValues: true, groupBy: ["day"]) {
+    summary {
+      sumExpense
+      __typename
+    }
+    groupBy {
+      day
+      __typename
+    }
+    __typename
+  }
+}
+  `
+  return await gqlCall("Common_GetCashFlowDashboard", query)
+}
+
 //#endregion
 
 //#region Mutations
