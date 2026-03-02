@@ -1030,9 +1030,15 @@ export async function getRecurringTransactions(startDate = null, endDate = null)
       recurringTransactionItems(startDate: $startDate, endDate: $endDate, filters: $filters) {
         stream {
           id
+          reviewStatus
           frequency
           amount
+          baseDate
+          dayOfTheMonth
           isApproximate
+          name
+          logoUrl
+          recurringType
           merchant {
             id
             name
@@ -1049,6 +1055,7 @@ export async function getRecurringTransactions(startDate = null, endDate = null)
         category {
           id
           name
+          budgetVariability
           __typename
         }
         account {
