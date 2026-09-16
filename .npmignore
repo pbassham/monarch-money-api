@@ -9,3 +9,6 @@ test2.js
 test3.js
 vercel.json
 monarchmoney.py
+.env
+.env.*
+.DS_Store

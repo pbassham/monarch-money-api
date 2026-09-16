@@ -9,6 +9,11 @@ npm i monarch-money-api
 ```
 
 ## Configuration
+Authenticate with one of two environment variables:
+
+- `MONARCH_COOKIE` — **current method.** Monarch's web app now uses an HttpOnly session cookie, and scripted logins are blocked by bot protection / reCAPTCHA. Log in at https://app.monarch.com ("Stay signed in"), open DevTools → Network, pick any request to `api.monarch.com/graphql`, and copy the request `Cookie` header (it includes `sessionid=…; csrftoken=…`). Sessions last roughly 60 days.
+- `MONARCH_TOKEN` — legacy bearer token. The CLI login below only works if Monarch lets the request through, which it currently does not.
+
 You will need to create a user token, that you will save as an environment variable in order to use the API.
 
 #### Create a token using the CLI: 

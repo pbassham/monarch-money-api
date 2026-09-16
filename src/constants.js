@@ -9,6 +9,7 @@ export const SESSION_DIR = path.resolve(__dirname, '../.mm');
 export const SESSION_FILE = path.join(SESSION_DIR, "mm_session.json");
 
 export const ENV_TOKEN_KEY = "MONARCH_TOKEN"
+export const ENV_COOKIE_KEY = "MONARCH_COOKIE"
 export const AUTH_HEADER_KEY = "Authorization";
 export const CSRF_KEY = "csrftoken";
 export const DEFAULT_RECORD_LIMIT = 100;

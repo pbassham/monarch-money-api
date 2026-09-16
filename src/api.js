@@ -1,7 +1,7 @@
 // api.js
 import { GraphQLClient, gql } from "graphql-request"
-import { getHeaders } from "./session.js"
-import { AUTH_HEADER_KEY, MonarchMoneyEndpoints, GQL_ENDPOINT } from "./constants.js"
+import { getHeaders, isAuthenticated } from "./session.js"
+import { MonarchMoneyEndpoints, GQL_ENDPOINT } from "./constants.js"
 import FormData from "form-data"
 
 const timeout = 10
@@ -14,8 +14,8 @@ export class RequestFailedException extends Error {}
 const getGraphQLClient = () => {
   const headers = getHeaders()
   // console.log(headers);
-  if (!headers[AUTH_HEADER_KEY]) {
-    throw new LoginFailedException("Make sure you call login() first or provide a session token!")
+  if (!isAuthenticated()) {
+    throw new LoginFailedException("No Monarch credentials: set MONARCH_TOKEN or MONARCH_COOKIE (see README).")
   }
   return new GraphQLClient(GQL_ENDPOINT, {
     headers,

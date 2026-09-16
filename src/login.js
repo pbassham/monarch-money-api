@@ -1,7 +1,7 @@
 import fetch from "node-fetch"
 import { promisify } from "util"
 import { RequireMFAException, LoginFailedException } from "./api.js"
-import { MonarchMoneyEndpoints, ERRORS_KEY, ENV_TOKEN_KEY } from "./constants.js"
+import { MonarchMoneyEndpoints, ERRORS_KEY, ENV_TOKEN_KEY, ENV_COOKIE_KEY } from "./constants.js"
 // import { getHeaders, setToken, saveSession } from "./session.js"
 import { getHeaders, setToken } from "./session.js"
 import readline from "readline"
@@ -30,10 +30,17 @@ export const loginUser = async (email, password, mfaSecretKey) => {
     body: data,
   })
 
-  if (response.status === 403) {
-    throw new RequireMFAException("Multi-Factor Auth Required")
-  } else if (response.status !== 200) {
-    throw new LoginFailedException(`HTTP Code ${response.status}: ${response.statusText}`)
+  if (response.status !== 200) {
+    const text = await response.text()
+    // Monarch answers 403 both for "MFA required" and for its edge/bot protection ("You Shall Not Pass").
+    if (response.status === 403 && /mfa|two.?factor|totp/i.test(text)) {
+      throw new RequireMFAException("Multi-Factor Auth Required")
+    }
+    throw new LoginFailedException(
+      `HTTP Code ${response.status}: ${text.slice(0, 200)}\n` +
+        "Monarch now blocks scripted logins (bot protection / reCAPTCHA). " +
+        "Log in at https://app.monarch.com in a browser and copy the token from localStorage instead (see README).",
+    )
   }
 
   const json = await response.json()
@@ -58,9 +65,13 @@ export const multiFactorAuthenticate = async (email, password, code) => {
   })
 
   if (response.status !== 200) {
-    const json = await response.json()
-    const errorMessage = json[ERRORS_KEY] ? json[ERRORS_KEY] : "Unknown error"
-    throw new LoginFailedException(errorMessage)
+    const text = await response.text()
+    let errorMessage = text.slice(0, 200)
+    try {
+      const json = JSON.parse(text)
+      if (json[ERRORS_KEY]) errorMessage = json[ERRORS_KEY]
+    } catch {}
+    throw new LoginFailedException(`HTTP Code ${response.status}: ${errorMessage}`)
   }
 
   const json = await response.json()
@@ -92,8 +103,8 @@ export const interactiveLogin = async (useSavedSession = true, saveSessionFlag =
 }
 
 // interactiveLogin()
-if (!process.env[ENV_TOKEN_KEY]) {
-    console.error(`No environment variable with key "${ENV_TOKEN_KEY}" found.`)
+if (!process.env[ENV_TOKEN_KEY] && !process.env[ENV_COOKIE_KEY]) {
+    console.error(`No environment variable with key "${ENV_TOKEN_KEY}" or "${ENV_COOKIE_KEY}" found.`)
     // throw new Error(`No environment variable with key "${ENV_TOKEN_KEY}" found.`)
     // interactiveLogin()
 } else {
